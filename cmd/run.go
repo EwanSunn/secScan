@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	cmdCrack "github.com/EwanSunn/secScan/cmd/crack"
 	cmdScan "github.com/EwanSunn/secScan/cmd/scan"
 	"github.com/desertbit/grumble"
 	"github.com/fatih/color"
@@ -20,6 +21,7 @@ var App = grumble.New(&grumble.Config{
 
 func init() {
 	App.AddCommand(cmdScan.PortScan)
+	App.AddCommand(cmdCrack.Crack)
 }
 
 func Run() {
