@@ -2,7 +2,7 @@ package port_scan
 
 import (
 	"fmt"
-	"github.com/EwanSunn/secScan/internal/scan/port-scan/vars"
+	"github.com/EwanSunn/secScan/internal/pkg/model/vars"
 	"net"
 	"strings"
 	"sync"

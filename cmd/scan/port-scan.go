@@ -9,11 +9,12 @@ import (
 var PortScan = &grumble.Command{
 	Name: "portScan",
 	Help: "Perform a port scan for the target",
+	Usage: "portScan -i 127.0.0.1(or 127.0.0.1/24) -p 22,23-24 -c 1000",
 	Run:  runPortScan,
 	Flags: func(f *grumble.Flags) {
 		f.String("i","ip","","ip list or ip file")
 		f.String("p", "port", "", "port list")
-		f.Int("n","thread",1000,"thread num")
+		f.Int("c","thread",1000,"thread num")
 	},
 }
 
