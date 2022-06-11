@@ -2,8 +2,11 @@ package port_scan
 
 import (
 	"fmt"
+	"github.com/EwanSunn/secScan/internal/config"
 	"github.com/EwanSunn/secScan/internal/pkg/model/vars"
+	"gopkg.in/cheggaaa/pb.v2"
 	"net"
+	"os"
 	"strings"
 	"sync"
 )
@@ -22,11 +25,14 @@ func GenerateTask(ipList []net.IP, ports []int) ([]map[string]int, int) {
 }
 
 func RunTask(tasks []map[string]int, threadNum int) {
+	totalTask := len(tasks)
+	vars.ProgressBarPort = pb.StartNew(totalTask)
+	vars.ProgressBarPort.SetTemplate(`{{ rndcolor "PortScan progress: " }} {{  percent . "[%.02f%%]" "[?]"| rndcolor}} {{ counters . "[%s/%s]" "[%s/?]" | rndcolor}} {{ bar . "「" "-" (rnd "ᗧ" "◔" "◕" "◷" ) "•" "」" | rndcolor }} {{rtime . | rndcolor}} `)
+
 	wg := &sync.WaitGroup{}
 
 	// 创建一个buffer为vars.threadNum * 2的channel
-	taskChan := make(chan map[string]int, threadNum * 2)
-
+	taskChan := make(chan map[string]int, threadNum*2)
 
 	// 创建vars.ThreadNum个协程
 	for i := 0; i < threadNum; i++ {
@@ -46,12 +52,27 @@ func RunTask(tasks []map[string]int, threadNum int) {
 func Scan(taskChan chan map[string]int, wg *sync.WaitGroup) {
 	// 每个协程都从channel中读取数据后开始扫描并入库
 	for task := range taskChan {
+		vars.ProgressBarPort.Increment()
 		for ip, port := range task {
+			config.Config.Log.Debugf("Scanning %s:%d", ip, port)
 			err := SaveResult(Connect(ip, port))
 			_ = err
 			wg.Done()
 		}
 	}
+	//vars.ProcessBarActive.Finish()
+}
+
+//存储端口扫描结果
+func Store(ip string, ports []int) {
+	file, err := os.Create("./result/portScan.txt")
+	if err != nil {
+		config.Config.Log.Error("Create file error", err)
+	}
+	for _, port := range ports {
+		_, _ = file.WriteString(fmt.Sprintf("%v:%v\n", ip, port))
+	}
+	vars.Result.Store(ip, ports)
 }
 
 func SaveResult(ip string, port int, err error) error {
@@ -62,18 +83,25 @@ func SaveResult(ip string, port int, err error) error {
 	if ok {
 		ports, ok1 := v.([]int)
 		if ok1 {
-			ports = append(ports, port)
-			vars.Result.Store(ip, ports)
+			for _, tmpPort := range ports {
+				if tmpPort == port {
+					continue
+				}
+				ports = append(ports, port)
+			}
+
+			Store(ip, ports)
 		}
 	} else {
 		ports := make([]int, 0)
 		ports = append(ports, port)
-		vars.Result.Store(ip, ports)
+		Store(ip, ports)
 	}
 	return err
 }
 
 func PrintResult() {
+	vars.ProgressBarPort.Finish()
 	vars.Result.Range(func(key, value interface{}) bool {
 		fmt.Printf("ip:%v\n", key)
 		fmt.Printf("ports: %v\n", value)

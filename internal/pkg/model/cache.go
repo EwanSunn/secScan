@@ -3,10 +3,10 @@ package model
 import (
 	"encoding/gob"
 	"fmt"
+	"github.com/EwanSunn/secScan/internal/config"
 	"github.com/EwanSunn/secScan/internal/pkg/model/vars"
 	"github.com/EwanSunn/secScan/internal/pkg/util/hash"
 	"github.com/patrickmn/go-cache"
-	"github.com/sirupsen/logrus"
 	"os"
 	"strings"
 	"time"
@@ -33,7 +33,7 @@ func SaveResult(result ScanResult, err error) {
 
 		_, found := vars.CacheService.Get(k)
 		if !found {
-			logrus.Infof("Ip: %v, Port: %v, Protocol: [%v], Username: %v, Password: %v", result.Service.Ip,
+			config.Config.Log.Infof("Ip: %v, Port: %v, Protocol: [%v], Username: %v, Password: %v", result.Service.Ip,
 				result.Service.Port, result.Service.Protocol, result.Service.Username, result.Service.Password)
 		}
 		vars.CacheService.Set(k, result, cache.NoExpiration)
@@ -47,8 +47,8 @@ func CacheStatus() (count int, items map[string]cache.Item) {
 }
 
 func ResultTotal() {
-	vars.ProgressBar.Finish()
-	logrus.Info(fmt.Sprintf("Finshed scan, total result: %v, used time: %v",
+	vars.ProgressBarPassword.Finish()
+	config.Config.Log.Info(fmt.Sprintf("Finshed scan, total result: %v, used time: %v",
 		vars.CacheService.ItemCount(),
 		time.Since(vars.StartTime)))
 }
