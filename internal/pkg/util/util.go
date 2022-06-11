@@ -2,9 +2,9 @@ package util
 
 import (
 	"fmt"
+	"github.com/EwanSunn/secScan/internal/config"
 	"github.com/EwanSunn/secScan/internal/pkg/model"
 	"github.com/EwanSunn/secScan/internal/pkg/model/vars"
-	"github.com/sirupsen/logrus"
 	"gopkg.in/cheggaaa/pb.v2"
 	"net"
 	"sync"
@@ -20,7 +20,7 @@ func init() {
 }
 
 func CheckAlive(ipList []model.IpAddr) []model.IpAddr {
-	logrus.Infoln("checking ip active")
+	config.Config.Log.Infoln("checking ip active")
 	vars.ProcessBarActive = pb.StartNew(len(ipList))
 	vars.ProcessBarActive.SetTemplate(`{{ rndcolor "Checking progress: " }} {{  percent . "[%.02f%%]" "[?]"| rndcolor}} {{ counters . "[%s/%s]" "[%s/?]" | rndcolor}} {{ bar . "「" "-" (rnd "ᗧ" "◔" "◕" "◷" ) "•" "」" | rndcolor}}  {{rtime . | rndcolor }}`)
 

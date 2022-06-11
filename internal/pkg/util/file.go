@@ -2,20 +2,49 @@ package util
 
 import (
 	"bufio"
+	"github.com/EwanSunn/secScan/internal/config"
 	"github.com/EwanSunn/secScan/internal/pkg/model"
 	"github.com/EwanSunn/secScan/internal/pkg/model/vars"
-	"github.com/sirupsen/logrus"
+	"net"
 	"os"
 	"strconv"
 	"strings"
 )
 
-
-
-func ReadIpList(fileName string) (ipList []model.IpAddr) {
+func ReadIpList(fileName string) (ipLists []net.IP, err error) {
 	ipListFile, err := os.Open(fileName)
 	if err != nil {
-		logrus.Error("Open ip List file err, %v", err)
+		config.Config.Log.Error("Open ip List file err, %v", err)
+	}
+
+	defer func() {
+		if ipListFile != nil {
+			_ = ipListFile.Close()
+		}
+	}()
+	scanner := bufio.NewScanner(ipListFile)
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "" {
+			continue
+		}
+		ipList, err := GetIpList(line)
+		if err != nil {
+			config.Config.Log.Error("ReadIpList Error, %v", err)
+		}
+		for _, ip := range ipList {
+			ipLists = append(ipLists, ip)
+		}
+	}
+	return ipLists, err
+}
+
+func ReadIpPortList(fileName string) (ipList []model.IpAddr) {
+	ipListFile, err := os.Open(fileName)
+	if err != nil {
+		config.Config.Log.Error("Open ipPort List file err, %v", err)
 	}
 
 	defer func() {
@@ -45,7 +74,7 @@ func ReadIpList(fileName string) (ipList []model.IpAddr) {
 				addr := model.IpAddr{Ip: ip, Port: port, Protocol: protocol}
 				ipList = append(ipList, addr)
 			} else {
-				logrus.Infof("Not support %v, ignore: %v:%v", protocol, ip, port)
+				config.Config.Log.Infof("Not support %v, ignore: %v:%v", protocol, ip, port)
 			}
 		} else {
 			// 通过端口查服务
@@ -67,7 +96,7 @@ func ReadIpList(fileName string) (ipList []model.IpAddr) {
 func ReadUserDict(userDict string) (users []string, err error) {
 	file, err := os.Open(userDict)
 	if err != nil {
-		logrus.Fatalf("Open user dict file err, %v", err)
+		config.Config.Log.Fatalf("Open user dict file err, %v", err)
 	}
 
 	defer func() {
@@ -91,7 +120,7 @@ func ReadUserDict(userDict string) (users []string, err error) {
 func ReadPasswordDict(passDict string) (password []string, err error) {
 	file, err := os.Open(passDict)
 	if err != nil {
-		logrus.Fatalf("Open password dict file err, %v", err)
+		config.Config.Log.Fatalf("Open password dict file err, %v", err)
 	}
 
 	defer func() {

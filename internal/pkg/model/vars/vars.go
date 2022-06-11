@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	ThreadNum = 5000
-	Result    *sync.Map
+	//ThreadNum = 5000
+	Result *sync.Map
 )
 var (
 	// ip_list，用户名与密码字典
@@ -29,12 +29,14 @@ var (
 	// 默认协程数
 	ScanNum = 5000
 
-	DebugMode bool
+	DebugMode bool = false
 
 	// 弱口令扫描进度条
-	ProgressBar *pb.ProgressBar
+	ProgressBarPassword *pb.ProgressBar
 	// 检测端口是否开放的进度条
 	ProcessBarActive *pb.ProgressBar
+	//端口扫描进度条
+	ProgressBarPort *pb.ProgressBar
 )
 
 var (

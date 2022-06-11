@@ -2,11 +2,11 @@ package task
 
 import (
 	"fmt"
+	"github.com/EwanSunn/secScan/internal/config"
 	"github.com/EwanSunn/secScan/internal/crack/plugin"
 	"github.com/EwanSunn/secScan/internal/pkg/model"
 	"github.com/EwanSunn/secScan/internal/pkg/model/vars"
 	"github.com/EwanSunn/secScan/internal/pkg/util/hash"
-	"github.com/sirupsen/logrus"
 	"gopkg.in/cheggaaa/pb.v2"
 	"runtime"
 	"strings"
@@ -31,8 +31,8 @@ func GenerateTask(ipList []model.IpAddr, users []string, passwords []string) (ta
 
 func RunTask(tasks []model.Service) {
 	totalTask := len(tasks)
-	vars.ProgressBar = pb.StartNew(totalTask)
-	vars.ProgressBar.SetTemplate(`{{ rndcolor "Scanning progress: " }} {{  percent . "[%.02f%%]" "[?]"| rndcolor}} {{ counters . "[%s/%s]" "[%s/?]" | rndcolor}} {{ bar . "「" "-" (rnd "ᗧ" "◔" "◕" "◷" ) "•" "」" | rndcolor }} {{rtime . | rndcolor}} `)
+	vars.ProgressBarPassword = pb.StartNew(totalTask)
+	vars.ProgressBarPassword.SetTemplate(`{{ rndcolor "Scanning progress: " }} {{  percent . "[%.02f%%]" "[?]"| rndcolor}} {{ counters . "[%s/%s]" "[%s/?]" | rndcolor}} {{ bar . "「" "-" (rnd "ᗧ" "◔" "◕" "◷" ) "•" "」" | rndcolor }} {{rtime . | rndcolor}} `)
 
 	wg := &sync.WaitGroup{}
 
@@ -65,10 +65,10 @@ func RunTask(tasks []model.Service) {
 // 每个协程都从channel中读取数据后开始扫描并保存
 func crackPassword(taskChan chan model.Service, wg *sync.WaitGroup) {
 	for task := range taskChan {
-		vars.ProgressBar.Increment()
+		vars.ProgressBarPassword.Increment()
 
 		if vars.DebugMode {
-			logrus.Debugf("checking: Ip: %v, Port: %v, [%v], UserName: %v, Password: %v, goroutineNum: %v", task.Ip, task.Port,
+			config.Config.Log.Debugf("checking: Ip: %v, Port: %v, [%v], UserName: %v, Password: %v, goroutineNum: %v", task.Ip, task.Port,
 				task.Protocol, task.Username, task.Password, runtime.NumGoroutine())
 		}
 
@@ -93,7 +93,6 @@ func crackPassword(taskChan chan model.Service, wg *sync.WaitGroup) {
 	}
 }
 
-
 // waitTimeout waits for the waitgroup for the specified max timeout.
 // Returns true if waiting timed out.
 func waitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {
@@ -109,4 +108,3 @@ func waitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {
 		return true // timed out
 	}
 }
-
