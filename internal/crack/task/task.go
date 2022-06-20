@@ -36,7 +36,7 @@ func RunTask(tasks []model.Service) {
 
 	wg := &sync.WaitGroup{}
 
-	// 创建一个buffer为vars.threadNum的channel
+	// 创建一个buffer为vars.ScanNum的channel
 	taskChan := make(chan model.Service, vars.ScanNum)
 
 	// 创建vars.ThreadNum个协程
