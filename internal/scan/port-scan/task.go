@@ -55,7 +55,8 @@ func Scan(taskChan chan map[string]int, wg *sync.WaitGroup) {
 		vars.ProgressBarPort.Increment()
 		for ip, port := range task {
 			config.Config.Log.Debugf("Scanning %s:%d", ip, port)
-			err := SaveResult(Connect(ip, port))
+			ip1, port1, err2 := Connect(ip, port)
+			err := SaveResult(ip1, port1, err2)
 			_ = err
 			wg.Done()
 		}
@@ -63,19 +64,29 @@ func Scan(taskChan chan map[string]int, wg *sync.WaitGroup) {
 	//vars.ProcessBarActive.Finish()
 }
 
-//存储端口扫描结果
+// Store 存储端口扫描结果到文件
 func Store(ip string, ports []int) {
-	file, err := os.Create("./result/portScan.txt")
+	filePort, err := os.Create("./result/portScan.txt")
+	fileCrack, err := os.Create("./result/crackPorts.txt")
 	if err != nil {
 		config.Config.Log.Error("Create file error", err)
 	}
+
 	for _, port := range ports {
-		_, _ = file.WriteString(fmt.Sprintf("%v:%v\n", ip, port))
+		_, _ = filePort.WriteString(fmt.Sprintf("%v:%v\n", ip, port))
+	}
+	//存储可以被爆破的端口到crackPorts.txt文件中
+	for _, port := range ports {
+		protocol, ok := vars.PortNames[port]
+		if ok && vars.SupportProtocols[protocol] {
+			_, _ = fileCrack.WriteString(fmt.Sprintf("%v:%v\n", ip, port))
+		}
 	}
 	vars.Result.Store(ip, ports)
 }
 
 func SaveResult(ip string, port int, err error) error {
+	config.Config.Log.Debugf("SaveResult %s:%d,%v", ip, port, err)
 	if err != nil {
 		return err
 	}
@@ -83,14 +94,18 @@ func SaveResult(ip string, port int, err error) error {
 	if ok {
 		ports, ok1 := v.([]int)
 		if ok1 {
-			for _, tmpPort := range ports {
-				if tmpPort == port {
-					continue
+			//判断结果是否已经保存
+			flag := false
+			for _, tmp := range ports {
+				if tmp == port {
+					flag = true
+					break
 				}
-				ports = append(ports, port)
 			}
-
-			Store(ip, ports)
+			if !flag {
+				ports = append(ports, port)
+				Store(ip, ports)
+			}
 		}
 	} else {
 		ports := make([]int, 0)
