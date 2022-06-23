@@ -3,6 +3,7 @@ package crack
 import (
 	"github.com/EwanSunn/secScan/internal/crack/task"
 	"github.com/EwanSunn/secScan/internal/pkg/model/vars"
+	"github.com/EwanSunn/secScan/internal/pkg/slog"
 	"github.com/EwanSunn/secScan/internal/pkg/util"
 	"github.com/desertbit/grumble"
 	"time"
@@ -15,6 +16,7 @@ var Crack = &grumble.Command{
 	Run:   runCrack,
 	Flags: func(f *grumble.Flags) {
 		f.Int("t", "timeout", 5, "timeout")
+		f.Bool("d", "debug", false, "debug mode")
 		f.Int("c", "thread", 1000, "thread num")
 		f.String("u", "user", "./dict/user.dic", "user dict")
 		f.String("p", "password", "./dict/pass.dic", "password dict")
@@ -24,6 +26,9 @@ var Crack = &grumble.Command{
 }
 
 func runCrack(ctx *grumble.Context) (err error) {
+	if ctx.Flags.Bool("debug") != false {
+		slog.SetDebug(true)
+	}
 	vars.TimeOut = time.Duration(ctx.Flags.Int("timeout")) * time.Second
 	vars.ScanNum = ctx.Flags.Int("thread")
 	vars.IpList = ctx.Flags.String("file")
