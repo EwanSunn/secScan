@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"github.com/EwanSunn/secScan/internal/config"
-	"github.com/EwanSunn/secScan/internal/pkg/model/vars"
+	"github.com/EwanSunn/secScan/internal/pkg/slog"
 	"github.com/EwanSunn/secScan/internal/pkg/util"
 	scanner "github.com/EwanSunn/secScan/internal/scan/port-scan"
 	"github.com/desertbit/grumble"
-	"github.com/sirupsen/logrus"
 	"net"
 )
 
@@ -35,11 +33,10 @@ func runPortScan(ctx *grumble.Context) (err error) {
 		ipFile := ctx.Flags.String("file")
 		ips, err = util.ReadIpList(ipFile)
 	} else {
-		config.Config.Log.Error("Invalid arguments.")
+		slog.Error("Invalid arguments.")
 	}
 	if ctx.Flags.Bool("debug") != false {
-		vars.DebugMode = true
-		config.Config.Log.Level = logrus.DebugLevel
+		slog.SetDebug(true)
 	}
 
 	portList := ctx.Flags.String("port")

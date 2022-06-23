@@ -2,9 +2,9 @@ package util
 
 import (
 	"bufio"
-	"github.com/EwanSunn/secScan/internal/config"
 	"github.com/EwanSunn/secScan/internal/pkg/model"
 	"github.com/EwanSunn/secScan/internal/pkg/model/vars"
+	"github.com/EwanSunn/secScan/internal/pkg/slog"
 	"net"
 	"os"
 	"strconv"
@@ -14,7 +14,7 @@ import (
 func ReadIpList(fileName string) (ipLists []net.IP, err error) {
 	ipListFile, err := os.Open(fileName)
 	if err != nil {
-		config.Config.Log.Error("Open ip List file err, %v", err)
+		slog.Error("Open ip List file err, %v", err)
 	}
 
 	defer func() {
@@ -32,7 +32,7 @@ func ReadIpList(fileName string) (ipLists []net.IP, err error) {
 		}
 		ipList, err := GetIpList(line)
 		if err != nil {
-			config.Config.Log.Error("ReadIpList Error, %v", err)
+			slog.Error("ReadIpList Error, %v", err)
 		}
 		for _, ip := range ipList {
 			ipLists = append(ipLists, ip)
@@ -44,7 +44,7 @@ func ReadIpList(fileName string) (ipLists []net.IP, err error) {
 func ReadIpPortList(fileName string) (ipList []model.IpAddr) {
 	ipListFile, err := os.Open(fileName)
 	if err != nil {
-		config.Config.Log.Error("Open ipPort List file err, %v", err)
+		slog.Error("Open ipPort List file err, %v", err)
 	}
 
 	defer func() {
@@ -74,7 +74,7 @@ func ReadIpPortList(fileName string) (ipList []model.IpAddr) {
 				addr := model.IpAddr{Ip: ip, Port: port, Protocol: protocol}
 				ipList = append(ipList, addr)
 			} else {
-				config.Config.Log.Infof("Not support %v, ignore: %v:%v", protocol, ip, port)
+				slog.Infof("Not support %v, ignore: %v:%v", protocol, ip, port)
 			}
 		} else {
 			// 通过端口查服务
@@ -96,7 +96,7 @@ func ReadIpPortList(fileName string) (ipList []model.IpAddr) {
 func ReadUserDict(userDict string) (users []string, err error) {
 	file, err := os.Open(userDict)
 	if err != nil {
-		config.Config.Log.Fatalf("Open user dict file err, %v", err)
+		slog.Fatalf("Open user dict file err, %v", err)
 	}
 
 	defer func() {
@@ -120,7 +120,7 @@ func ReadUserDict(userDict string) (users []string, err error) {
 func ReadPasswordDict(passDict string) (password []string, err error) {
 	file, err := os.Open(passDict)
 	if err != nil {
-		config.Config.Log.Fatalf("Open password dict file err, %v", err)
+		slog.Fatalf("Open password dict file err, %v", err)
 	}
 
 	defer func() {

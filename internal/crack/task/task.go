@@ -2,10 +2,10 @@ package task
 
 import (
 	"fmt"
-	"github.com/EwanSunn/secScan/internal/config"
 	"github.com/EwanSunn/secScan/internal/crack/plugin"
 	"github.com/EwanSunn/secScan/internal/pkg/model"
 	"github.com/EwanSunn/secScan/internal/pkg/model/vars"
+	"github.com/EwanSunn/secScan/internal/pkg/slog"
 	"github.com/EwanSunn/secScan/internal/pkg/util/hash"
 	"gopkg.in/cheggaaa/pb.v2"
 	"runtime"
@@ -68,7 +68,7 @@ func crackPassword(taskChan chan model.Service, wg *sync.WaitGroup) {
 		vars.ProgressBarPassword.Increment()
 
 		if vars.DebugMode {
-			config.Config.Log.Debugf("checking: Ip: %v, Port: %v, [%v], UserName: %v, Password: %v, goroutineNum: %v", task.Ip, task.Port,
+			slog.Debugf("checking: Ip: %v, Port: %v, [%v], UserName: %v, Password: %v, goroutineNum: %v", task.Ip, task.Port,
 				task.Protocol, task.Username, task.Password, runtime.NumGoroutine())
 		}
 

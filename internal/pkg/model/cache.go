@@ -3,8 +3,8 @@ package model
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/EwanSunn/secScan/internal/config"
 	"github.com/EwanSunn/secScan/internal/pkg/model/vars"
+	"github.com/EwanSunn/secScan/internal/pkg/slog"
 	"github.com/EwanSunn/secScan/internal/pkg/util/hash"
 	"github.com/patrickmn/go-cache"
 	"os"
@@ -33,7 +33,7 @@ func SaveResult(result ScanResult, err error) {
 
 		_, found := vars.CacheService.Get(k)
 		if !found {
-			config.Config.Log.Infof("Ip: %v, Port: %v, Protocol: [%v], Username: %v, Password: %v", result.Service.Ip,
+			slog.Infof("Ip: %v, Port: %v, Protocol: [%v], Username: %v, Password: %v", result.Service.Ip,
 				result.Service.Port, result.Service.Protocol, result.Service.Username, result.Service.Password)
 		}
 		vars.CacheService.Set(k, result, cache.NoExpiration)
@@ -48,7 +48,7 @@ func CacheStatus() (count int, items map[string]cache.Item) {
 
 func ResultTotal() {
 	vars.ProgressBarPassword.Finish()
-	config.Config.Log.Info(fmt.Sprintf("Finshed scan, total result: %v, used time: %v",
+	slog.Info(fmt.Sprintf("Finshed scan, total result: %v, used time: %v",
 		vars.CacheService.ItemCount(),
 		time.Since(vars.StartTime)))
 }

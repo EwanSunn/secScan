@@ -2,8 +2,8 @@ package port_scan
 
 import (
 	"fmt"
-	"github.com/EwanSunn/secScan/internal/config"
 	"github.com/EwanSunn/secScan/internal/pkg/model/vars"
+	"github.com/EwanSunn/secScan/internal/pkg/slog"
 	"gopkg.in/cheggaaa/pb.v2"
 	"net"
 	"os"
@@ -54,7 +54,7 @@ func Scan(taskChan chan map[string]int, wg *sync.WaitGroup) {
 	for task := range taskChan {
 		vars.ProgressBarPort.Increment()
 		for ip, port := range task {
-			config.Config.Log.Debugf("Scanning %s:%d", ip, port)
+			slog.Debugf("Scanning %s:%d", ip, port)
 			ip1, port1, err2 := Connect(ip, port)
 			err := SaveResult(ip1, port1, err2)
 			_ = err
@@ -69,7 +69,7 @@ func Store(ip string, ports []int) {
 	filePort, err := os.Create("./result/portScan.txt")
 	fileCrack, err := os.Create("./result/crackPorts.txt")
 	if err != nil {
-		config.Config.Log.Error("Create file error", err)
+		slog.Error("Create file error", err)
 	}
 
 	for _, port := range ports {
@@ -86,7 +86,6 @@ func Store(ip string, ports []int) {
 }
 
 func SaveResult(ip string, port int, err error) error {
-	config.Config.Log.Debugf("SaveResult %s:%d,%v", ip, port, err)
 	if err != nil {
 		return err
 	}
