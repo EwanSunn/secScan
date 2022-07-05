@@ -1,10 +1,11 @@
 # secScan  
 An interactive penetration test scanning tool  
-  
+
 ## 功能特性  
 ### 已完成
 - [+] 2022/06/08    完成端口扫描与常用服务弱口令爆破功能
 - [+] 2022/06/20    完成logger日志记录功能，改进端口扫描的保存结果，结果可供弱口令爆破功能直接读取
+- [+] 2022/07/05    参考kScan完成fofa的搜索功能
 ### TODO
 - 将主机存活探测功能单独抽取出来，与端口扫描等一样，形成一个新的模块
 - 添加`gobuster`模块到secScan中
@@ -40,6 +41,10 @@ ip.txt format:
 ....
 127.0.0.1:6379
 ```
+### fofa搜索
+Usage:
+1. `fofa --show` ：显示所有fofa语法
+2. `fofa fofa -e <email> -k <key> -t <keywords>`  : 输入email、key与搜索关键字进行搜索
 
 
   
@@ -47,3 +52,4 @@ ip.txt format:
 - 《白帽子安全开发实战》& 配套代码：https://github.com/netxfly/sec-dev-in-action-src
 - https://github.com/desertbit/grumble
 - 极客时间专栏 《Go 语言项目开发实战》
+- https://github.com/lcvvvv/kscan
