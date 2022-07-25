@@ -11,8 +11,13 @@ import (
 	"strings"
 )
 
+type FofaConfig struct {
+	Email string `yaml:"email"`
+	Key   string `yaml:"key"`
+}
+
 type Fofa struct {
-	email, key                     string
+	fofaConfig                     FofaConfig
 	baseURL, loginPath, searchPath string
 	fieldList                      []string
 	size                           int
@@ -37,9 +42,8 @@ type Response struct {
 }
 
 func New(email, key string) *Fofa {
-	f := &Fofa{
-		email:      email,
-		key:        key,
+	var f = &Fofa{
+		fofaConfig: FofaConfig{Email: email, Key: key},
 		baseURL:    "https://fofa.info",
 		searchPath: "/api/v1/search/all",
 		loginPath:  "/api/v1/info/my",
@@ -67,8 +71,8 @@ func (f *Fofa) Search(keyword string) (int, []FofaResult) {
 	req, _ := http.NewRequest(http.MethodGet, url, nil)
 	q := req.URL.Query()
 	q.Add("qbase64", encode.Base64Encode(keyword))
-	q.Add("email", f.email)
-	q.Add("key", f.key)
+	q.Add("email", f.fofaConfig.Email)
+	q.Add("key", f.fofaConfig.Key)
 	q.Add("page", "1")
 	q.Add("fields", strings.Join(f.fieldList, ","))
 	q.Add("size", strconv.Itoa(f.size))

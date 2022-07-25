@@ -1,11 +1,15 @@
 package fofa
 
 import (
+	"encoding/csv"
 	"fmt"
 	fofa_model "github.com/EwanSunn/secScan/internal/pkg/model/fofa_model"
 	"github.com/EwanSunn/secScan/internal/pkg/slog"
 	"github.com/EwanSunn/secScan/internal/pkg/util/color"
 	"github.com/EwanSunn/secScan/internal/pkg/util/encode"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -13,23 +17,46 @@ import (
 
 var fofa *fofa_model.Fofa
 
-func initConfig(email, key string, size int) {
+func initConfig(config string, size int) {
+	file, err := ioutil.ReadFile("./conf.yml")
+	if err != nil {
+		slog.Error("无配置文件，请将fofa账号email与key配置到conf.yml文件中.文件格式：\n email: xxx@xx.com \n key: xxxx")
+	}
+	conf := new(fofa_model.FofaConfig)
+	err = yaml.Unmarshal(file, conf)
+	if err != nil {
+		slog.Error("配置文件解析错误.文件格式（冒号后一个空格）：\n email: xxx@xx.com \n key: xxxx")
+	}
+	email := conf.Email
+	key := conf.Key
 	fofa = fofa_model.New(email, key)
 	fofa.SetSize(size)
 }
 
-func Run(email, key, target string, size int) {
-	initConfig(email, key, size)
+func Run(config, target, output string, size int) {
+	initConfig(config, size)
 	keywords := loadFofa(target)
 	for _, keyword := range keywords {
 		slog.Infof("本次搜索关键字为：%v", keyword)
 		size, results := fofa.Search(keyword)
-		displayResponse(results)
+		displayResponse(results, output)
 		slog.Infof("本次搜索，返回结果总条数为：%d，此次返回条数为：%d", size, len(results))
 	}
 }
 
-func displayResponse(results []fofa_model.FofaResult) {
+func displayResponse(results []fofa_model.FofaResult, output string) {
+	//创建一个新文件
+	csvFile, err := os.Create(output)
+	if err != nil {
+		panic(err)
+	}
+	defer csvFile.Close()
+	writer := csv.NewWriter(csvFile)
+	writer.Write([]string{
+		"Host",
+		"Title",
+		"Server",
+	})
 	for _, row := range results {
 		Fix(&row)
 		m := row.CreateMap()
@@ -53,7 +80,17 @@ func displayResponse(results []fofa_model.FofaResult) {
 			color.StrMapRandomColor(m, false, []string{"Server"}, []string{}),
 		)
 		fmt.Println(line)
+		outline := []string{
+			row.Host,
+			row.Title,
+			color.StrMapRandomColor(m, false, []string{"Server"}, []string{}),
+		}
+		err := writer.Write(outline)
+		if err != nil {
+			panic(err)
+		}
 	}
+	writer.Flush()
 }
 
 func Fix(r *fofa_model.FofaResult) {
