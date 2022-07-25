@@ -12,20 +12,20 @@ var Fofa = &grumble.Command{
 	Run:   runFofa,
 	Flags: func(f *grumble.Flags) {
 		f.Bool("s", "show", false, "show fofa syntax")
-		f.String("e", "email", "", "fofa account email")
-		f.String("k", "key", "", "fofa account key")
+		f.String("c", "config", "./conf.yml", "fofa config file")
 		f.String("t", "target", "", "fofa search target")
 		f.Int("z", "size", 20, "fofa search size")
+		f.String("o", "output", "./result/fofa.csv", "fofa result file")
 	},
 }
 
 func runFofa(ctx *grumble.Context) (err error) {
 	if ctx.Flags.Bool("show") == false {
-		email := ctx.Flags.String("email")
-		key := ctx.Flags.String("key")
+		config := ctx.Flags.String("config")
 		target := ctx.Flags.String("target")
 		size := ctx.Flags.Int("size")
-		fofa.Run(email, key, target, size)
+		output := ctx.Flags.String("output")
+		fofa.Run(config, target, output, size)
 	} else {
 		fofa.ShowSyntax()
 	}

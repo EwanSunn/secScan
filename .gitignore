@@ -17,3 +17,5 @@
 /result/
 /dict/
 /tmp/
+.secScan
+.conf.yml
